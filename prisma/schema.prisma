@@ -1,14 +1,122 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
-datasource db {
-  provider = "postgresql"
+
+// ENUMS
+enum UserType {
+  CLIENT
+  ADMIN
+}
+
+enum PaymentMethod {
+  CASH
+  DEBIT
+  CREDIT
+  PIX
+}
+
+// MODELS
+model User {
+  id            BigInt    @id @default(autoincrement())
+  name          String
+  phone         String?
+  type          UserType  @default(CLIENT)
+  password      String    @unique
+
+  // RELACIONAMENTO 1:1 COM ADDRESS:
+  addressId     BigInt?   @unique
+  address       Address?  @relation(fields: [addressId], references: [id])
+  
+  // Relacionamentos com Order
+  orders        Order[]   @relation("UserOrders")
+  createdOrders Order[]   @relation("CreatedByUser")
+
+  // Campos de Data
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Address {
+  id            BigInt    @id @default(autoincrement())
+  street        String
+  number        String?
+  district      String?
+  city          String
+  state         String
+  zipCode       String
+
+  // RELACIONAMENTO 1:1 COM USER:
+  // O lado 'user' é opcional se o Address puder existir sem um User (não estrito 1:1)
+  // Mas como a chave está no User, o campo é apenas para navegação.
+  user          User?
+
+  // Campos de Data
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Order {
+  id            BigInt          @id @default(autoincrement())
+  
+  userClientId  BigInt
+  userClient    User            @relation("UserOrders", fields: [userClientId], references: [id])
+  
+  userCreatedById BigInt
+  userCreatedBy   User            @relation("CreatedByUser", fields: [userCreatedById], references: [id])
+  
+  paymentMethod PaymentMethod
+  status        String
+
+  items         OrderItem[]
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model OrderItem {
+  id            BigInt    @id @default(autoincrement())
+
+  orderId       BigInt
+  order         Order     @relation(fields: [orderId], references: [id])
+
+  itemId        BigInt
+  item          Item      @relation(fields: [itemId], references: [id])
+
+  quantity      Int
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([orderId, itemId])
+}
+
+model Item {
+  id            BigInt      @id @default(autoincrement())
+  description   String
+  unitPrice     Float       @map("double_unitPrice")
+  
+  categoryId    BigInt
+  category      Category    @relation(fields: [categoryId], references: [id])
+
+  orderItems    OrderItem[]
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Category {
+  id            BigInt    @id @default(autoincrement())
+  description   String
+  
+  items         Item[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
