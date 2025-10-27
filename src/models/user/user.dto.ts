@@ -1,4 +1,3 @@
-import { AddressDto } from './addressDto';
 import { UserType } from '../../enums/user-type.enum';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -32,7 +31,7 @@ export class UserDto {
       createdAt: new Date(),
     },
   })
-  address: AddressDto;
+  addressId: number;
   @ApiProperty({
     description: 'Telefone do usuario',
     example: '34999999999',

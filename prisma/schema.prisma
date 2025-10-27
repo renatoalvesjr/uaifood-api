@@ -24,14 +24,15 @@ enum PaymentMethod {
 
 // MODELS
 model User {
-  id            BigInt    @id @default(autoincrement())
+  id            Int    @id @default(autoincrement())
   name          String
+  email         String    @unique
   phone         String?
   type          UserType  @default(CLIENT)
   password      String    @unique
 
   // RELACIONAMENTO 1:1 COM ADDRESS:
-  addressId     BigInt?   @unique
+  addressId     Int?   @unique
   address       Address?  @relation(fields: [addressId], references: [id])
   
   // Relacionamentos com Order
@@ -44,7 +45,7 @@ model User {
 }
 
 model Address {
-  id            BigInt    @id @default(autoincrement())
+  id            Int    @id @default(autoincrement())
   street        String
   number        String?
   district      String?
@@ -63,12 +64,12 @@ model Address {
 }
 
 model Order {
-  id            BigInt          @id @default(autoincrement())
+  id            Int          @id @default(autoincrement())
   
-  userClientId  BigInt
+  userClientId  Int
   userClient    User            @relation("UserOrders", fields: [userClientId], references: [id])
   
-  userCreatedById BigInt
+  userCreatedById Int
   userCreatedBy   User            @relation("CreatedByUser", fields: [userCreatedById], references: [id])
   
   paymentMethod PaymentMethod
@@ -81,12 +82,12 @@ model Order {
 }
 
 model OrderItem {
-  id            BigInt    @id @default(autoincrement())
+  id            Int    @id @default(autoincrement())
 
-  orderId       BigInt
+  orderId       Int
   order         Order     @relation(fields: [orderId], references: [id])
 
-  itemId        BigInt
+  itemId        Int
   item          Item      @relation(fields: [itemId], references: [id])
 
   quantity      Int
@@ -98,11 +99,11 @@ model OrderItem {
 }
 
 model Item {
-  id            BigInt      @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   description   String
   unitPrice     Float       @map("double_unitPrice")
   
-  categoryId    BigInt
+  categoryId    Int
   category      Category    @relation(fields: [categoryId], references: [id])
 
   orderItems    OrderItem[]
@@ -112,7 +113,7 @@ model Item {
 }
 
 model Category {
-  id            BigInt    @id @default(autoincrement())
+  id            Int    @id @default(autoincrement())
   description   String
   
   items         Item[]

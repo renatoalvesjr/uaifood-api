@@ -1,5 +1,5 @@
 import { PaymentMethod } from 'src/enums/payment-method.enum';
-import { UserDto } from '../user/userDto';
+import { UserDto } from '../user/user.dto';
 
 export class OrderDto {
   id: number;

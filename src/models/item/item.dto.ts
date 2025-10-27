@@ -1,4 +1,4 @@
-import { CategoryDto } from './categoryDto';
+import { CategoryDto } from '../category/category.dto';
 
 export class ItemDto {
   id: number;

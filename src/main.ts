@@ -15,7 +15,6 @@ async function bootstrap() {
     .setTitle('Uaifood API Doc')
     .setDescription('Documentação da API Uaifood')
     .setVersion('1.0')
-    .addTag('uaifood')
     .build();
   const documentFactory = () =>
     SwaggerModule.createDocument(app, swaggerConfig);
