@@ -9,7 +9,7 @@ npx prisma generate
 
 # 2. Aplica as migrações pendentes.
 echo "Aplicando migrações do Prisma (migrate deploy)..."
-npx prisma migrate dev
+npx prisma migrate deploy 
 
 # 3. Inicia a aplicação NestJS em modo de desenvolvimento (com watch/hot reload)
 echo "Iniciando aplicação NestJS com hot-reload..."

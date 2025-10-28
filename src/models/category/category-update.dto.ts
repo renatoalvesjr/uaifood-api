@@ -5,7 +5,7 @@ export class CategoryUpdateDto {
     description: 'Id da categoria',
     example: 1,
   })
-  id: bigint;
+  id: number;
 
   @ApiProperty({
     description: 'Descrição da categoria',

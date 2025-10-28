@@ -19,10 +19,12 @@ export class CategoryService {
     return await this.prisma.category.create({
       data: {
         description: category.description,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
     });
   }
-  async getCategoriesPaginated(
+  async getCategories(
     paginationDto: PaginationDto,
   ): Promise<PaginatedCategoryDto> {
     const { page, limit } = paginationDto;
@@ -31,7 +33,7 @@ export class CategoryService {
     const totalItems = await this.prisma.category.count();
     const data = await this.prisma.category.findMany({
       skip,
-      take: limit,
+      take: Number(limit),
       orderBy: { id: 'asc' },
     });
 
@@ -53,7 +55,7 @@ export class CategoryService {
     this.logger.log(`Getting category with id ${id}`);
     return await this.prisma.category.findUnique({
       where: {
-        id,
+        id: Number(id),
       },
     });
   }
@@ -62,7 +64,7 @@ export class CategoryService {
 
     return await this.prisma.category.delete({
       where: {
-        id,
+        id: Number(id),
       },
     });
   }
@@ -72,7 +74,7 @@ export class CategoryService {
     this.logger.log(`Updating category with id ${categoryUpdate.id}`);
     const reponse = await this.prisma.category.update({
       where: {
-        id: categoryUpdate.id,
+        id: Number(categoryUpdate.id),
       },
       data: {
         description: categoryUpdate.description,
