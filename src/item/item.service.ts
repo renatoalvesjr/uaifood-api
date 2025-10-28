@@ -4,7 +4,7 @@ import { ItemInputDto } from 'src/models/item/item-input.dto';
 import { ItemUpdateDto } from 'src/models/item/item-update.dto';
 import { ItemDto } from 'src/models/item/item.dto';
 import { PaginatedItemDto } from 'src/models/item/paginated-item.dto';
-import { PrismaService } from 'src/prisma/psirma.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ItemService {

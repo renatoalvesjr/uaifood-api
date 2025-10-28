@@ -5,7 +5,7 @@ import { CategoryDto } from 'src/models/category/category.dto';
 import { PaginatedCategoryDto } from 'src/models/category/paginated-category.dto';
 import { PaginationMetaDto } from 'src/models/common/pagination-meta.dto';
 import { PaginationDto } from 'src/models/common/pagination.dto';
-import { PrismaService } from 'src/prisma/psirma.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class CategoryService {

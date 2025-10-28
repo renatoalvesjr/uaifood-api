@@ -1,3 +1,4 @@
+import { OrderModule } from './order/order.module';
 import { ItemModule } from './item/item.module';
 import { CategoryModule } from './category/category.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -7,6 +8,7 @@ import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    OrderModule,
     ItemModule,
     CategoryModule,
     PrismaModule,

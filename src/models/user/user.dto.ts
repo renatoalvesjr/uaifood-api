@@ -1,5 +1,5 @@
-import { UserType } from '../../enums/user-type.enum';
 import { ApiProperty } from '@nestjs/swagger';
+import { UserType } from 'generated/prisma';
 
 export class UserDto {
   @ApiProperty({
@@ -7,11 +7,13 @@ export class UserDto {
     example: 1,
   })
   id: number;
+
   @ApiProperty({
     description: 'Nome do usuário',
     example: 'Renato',
   })
   name: string;
+
   @ApiProperty({
     description: 'Email do usuário',
     example: 'usuario@email.com',
@@ -32,16 +34,23 @@ export class UserDto {
     },
   })
   addressId: number;
+
   @ApiProperty({
     description: 'Telefone do usuario',
     example: '34999999999',
   })
   phone: string;
+
   @ApiProperty({
     description: 'Tipo de usuario',
     enum: UserType,
     example: UserType.CLIENT,
   })
   userType: UserType;
+
+  @ApiProperty({
+    description: 'Data de criação do usuário',
+    example: '2025-01-01T00:00:00.000Z',
+  })
   createdAt: Date;
 }

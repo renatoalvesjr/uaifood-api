@@ -6,7 +6,7 @@ import {
   IsString,
   IsStrongPassword,
 } from 'class-validator';
-import { UserType } from 'src/enums/user-type.enum';
+import { UserType } from 'generated/prisma';
 
 export class UserRegisterDto {
   @ApiProperty({
