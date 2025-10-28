@@ -12,6 +12,9 @@ export class OrderService {
   constructor(private readonly prisma: PrismaService) {}
 
   async createOrder(order: OrderInputDto): Promise<OrderDto> {
+    this.logger.log(
+      `Creating order with userClientId ${order.userClientId}, userCreatedById ${order.userCreatedById} and status ${order.status}`,
+    );
     return await this.prisma.order.create({
       data: {
         userClientId: Number(order.userClientId),
