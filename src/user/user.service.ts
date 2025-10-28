@@ -25,9 +25,9 @@ export class UserService {
     });
   }
 
-  createUser(register: UserRegisterDto) {
+  async createUser(register: UserRegisterDto): Promise<User> {
     this.logger.log(`Creating user with email ${register.email}`);
-    return this.prisma.user.create({
+    return await this.prisma.user.create({
       data: {
         name: register.name,
         email: register.email,

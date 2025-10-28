@@ -36,7 +36,7 @@ export class AuthService {
     };
   }
 
-  async register(register: UserRegisterDto) {
+  async register(register: UserRegisterDto): Promise<TokenDto> {
     this.logger.log(`Registering user with email ${register.email}`);
     const user: User | null = await this.userService.getUser(register.email);
     if (user) {
@@ -44,9 +44,18 @@ export class AuthService {
       throw new Error('Usuário já existe');
     }
     const hashedPassword = await bcrypt.hash(register.password, 10);
-    return this.userService.createUser({
+    const createdUser = await this.userService.createUser({
       ...register,
       password: hashedPassword,
     });
+    if (!createdUser) {
+      this.logger.error(`Couldn't create user with email ${register.email}`);
+      throw new Error('Erro ao criar usuário');
+    }
+    const payload = { sub: createdUser.id, email: createdUser.email };
+    this.logger.log(`User with email ${register.email} registered`);
+    return {
+      access_token: await this.jwtService.signAsync(payload),
+    };
   }
 }
