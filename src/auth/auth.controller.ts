@@ -2,12 +2,20 @@
 https://docs.nestjs.com/controllers#controllers
 */
 
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Res,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from 'src/models/user/login.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TokenDto } from 'src/models/user/token.dto';
 import { UserRegisterDto } from 'src/models/user/user-register.dto';
+import type { Response } from 'express';
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -30,8 +38,18 @@ export class AuthController {
   })
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  signIn(@Body() signInDto: LoginDto) {
-    return this.authService.signIn(signInDto);
+  async signIn(
+    @Body() signInDto: LoginDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const token = await this.authService.signIn(signInDto);
+    response.cookie('access_token', token.access_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 3600 * 1000,
+    });
+    return token;
   }
 
   @ApiOperation({

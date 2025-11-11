@@ -16,7 +16,10 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async signIn(login: LoginDto): Promise<TokenDto> {
+  async signIn(
+    login: LoginDto,
+    res?: import('express').Response,
+  ): Promise<TokenDto> {
     const user: User | null = await this.userService.getUser(login.email);
     this.logger.log(`Atempting to login with email ${login.email}`);
     if (!user) {
@@ -31,8 +34,21 @@ export class AuthService {
     }
     const payload = { sub: user.id, email: user.email };
     this.logger.log(`Login successful for user with email ${login.email}`);
+    const token = await this.jwtService.signAsync(payload);
+
+    // If an Express response object was provided, set the cookie as HttpOnly
+    if (res) {
+      res.cookie('access_token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        path: '/',
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
+      });
+    }
+
     return {
-      access_token: await this.jwtService.signAsync(payload),
+      access_token: token,
     };
   }
 

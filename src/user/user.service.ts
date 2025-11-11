@@ -13,11 +13,6 @@ export class UserService {
   async getUser(email: string): Promise<User | null> {
     this.logger.log(`Getting user with email ${email}`);
 
-    if (await this.userExists(email)) {
-      this.logger.log(`User with email ${email} found`);
-      throw new Error('Usuário já existe');
-    }
-
     return this.prisma.user.findUnique({
       where: {
         email,
