@@ -18,13 +18,6 @@ export class LoginDto {
     description: 'Senha do usuário',
     example: '123456',
   })
-  @IsStrongPassword({
-    minLength: 6,
-    minLowercase: 1,
-    minUppercase: 1,
-    minNumbers: 1,
-    minSymbols: 1,
-  })
   @IsNotEmpty({ message: 'Senha não pode ser vazia' })
   @IsString({ message: 'Senha deve ser uma string' })
   password: string;
