@@ -32,6 +32,10 @@ export class OrderItemService {
         orderId: Number(orderId),
         itemId: Number(itemId),
       },
+      include: {
+        item: true,
+        order: true,
+      },
     });
   }
 
@@ -46,6 +50,10 @@ export class OrderItemService {
       skip,
       take: Number(limit),
       orderBy: { id: 'asc' },
+      include: {
+        item: true,
+        order: true,
+      },
     });
     const totalPages = Math.ceil(totalItems / limit);
     const itemCount = data.length;

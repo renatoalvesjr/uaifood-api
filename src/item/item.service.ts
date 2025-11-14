@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PaginationDto } from 'src/models/common/pagination.dto';
 import { ItemInputDto } from 'src/models/item/item-input.dto';
 import { ItemUpdateDto } from 'src/models/item/item-update.dto';
-import { ItemDto } from 'src/models/item/item.dto';
 import { PaginatedItemDto } from 'src/models/item/paginated-item.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -11,8 +10,9 @@ export class ItemService {
   logger: Logger = new Logger(ItemService.name);
   constructor(private readonly prisma: PrismaService) {}
 
-  async createItem(itemInput: ItemInputDto): Promise<ItemDto> {
+  async createItem(itemInput: ItemInputDto) {
     this.logger.log(`Creating item with description ${itemInput.description}`);
+    this.logger.log(itemInput);
 
     return await this.prisma.item.create({
       data: {
@@ -20,16 +20,19 @@ export class ItemService {
         unitPrice: itemInput.unitPrice,
         category: {
           connect: {
-            id: itemInput.category,
+            id: itemInput.categoryId,
           },
         },
         createdAt: new Date(),
         updatedAt: new Date(),
       },
+      include: {
+        category: true,
+      },
     });
   }
 
-  async getItems(paginationDto: PaginationDto): Promise<PaginatedItemDto> {
+  async getItems(paginationDto: PaginationDto) {
     const { page, limit } = paginationDto;
     const skip = (page - 1) * limit;
     this.logger.log(`Getting items - Page: ${page}, Limit: ${limit}`);
@@ -38,6 +41,9 @@ export class ItemService {
       skip,
       take: Number(limit),
       orderBy: { id: 'asc' },
+      include: {
+        category: true,
+      },
     });
 
     const totalPages = Math.ceil(totalItems / limit);
@@ -52,25 +58,31 @@ export class ItemService {
     });
   }
 
-  async getItem(id: number): Promise<ItemDto | null> {
+  async getItem(id: number) {
     this.logger.log(`Getting item with id ${id}`);
     return await this.prisma.item.findUnique({
       where: {
         id: Number(id),
       },
+      include: {
+        category: true,
+      },
     });
   }
 
-  async removeItem(id: number): Promise<ItemDto> {
+  async removeItem(id: number) {
     this.logger.log(`Removing item with id ${id}`);
     return await this.prisma.item.delete({
       where: {
         id: Number(id),
       },
+      include: {
+        category: true,
+      },
     });
   }
 
-  async updateItem(itemUpdate: ItemUpdateDto): Promise<ItemDto> {
+  async updateItem(itemUpdate: ItemUpdateDto) {
     this.logger.log(`Updating item with id ${itemUpdate.id}`);
     const reponse = await this.prisma.item.update({
       where: {
@@ -85,6 +97,9 @@ export class ItemService {
           },
         },
         updatedAt: new Date(),
+      },
+      include: {
+        category: true,
       },
     });
     if (!reponse) {

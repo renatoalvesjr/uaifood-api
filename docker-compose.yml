@@ -32,7 +32,7 @@ services:
       
     ports:
       - "3001:3001"
-    entrypoint: sh -c "./entrypoint.sh" 
+    entrypoint: ["sh", "-c", "/usr/src/app/entrypoint.sh"]
 
 volumes:
   postgres_data:

@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { CategoryDto } from '../category/category.dto';
 
 export class ItemDto {
   @ApiProperty({
@@ -20,10 +21,10 @@ export class ItemDto {
   unitPrice: number;
 
   @ApiProperty({
-    description: 'Id da categoria do item',
-    example: 1,
+    description: 'Categoria do item',
+    type: () => CategoryDto,
   })
-  categoryId: number;
+  category: CategoryDto;
 
   @ApiProperty({
     description: 'Data de criação do item',

@@ -23,5 +23,8 @@ export class ItemInputDto {
     description: 'Id da categoria do item',
     example: 1,
   })
-  category: number;
+  @IsNotEmpty({ message: 'Id da categoria não pode ser vazio' })
+  @IsNumber({}, { message: 'Id da categoria deve ser um número' })
+  @Min(1, { message: 'Id da categoria deve ser maior que zero' })
+  categoryId: number;
 }
