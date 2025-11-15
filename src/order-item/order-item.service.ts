@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PaginationDto } from 'src/models/common/pagination.dto';
-import { OrderItemInputDto } from 'src/models/order-item/order-item-input.dto';
-import { OrderItemDto } from 'src/models/order-item/order-item.dto';
-import { PaginatedOrderItemDto } from 'src/models/order-item/paginated-order-item.dto';
+import { PaginationDto } from 'src/pagination/pagination.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { OrderItemInputDto } from './dto/order-item-input.dto';
+import { OrderItemDto } from './dto/order-item.dto';
+import { PaginatedOrderItemDto } from './dto/paginated-order-item.dto';
 
 @Injectable()
 export class OrderItemService {

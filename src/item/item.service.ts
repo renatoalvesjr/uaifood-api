@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PaginationDto } from 'src/models/common/pagination.dto';
-import { ItemInputDto } from 'src/models/item/item-input.dto';
-import { ItemUpdateDto } from 'src/models/item/item-update.dto';
-import { PaginatedItemDto } from 'src/models/item/paginated-item.dto';
+import { PaginationDto } from 'src/pagination/pagination.dto';
+import { ItemInputDto } from 'src/item/dto/item-input.dto';
+import { ItemUpdateDto } from 'src/item/dto/item-update.dto';
+import { PaginatedItemDto } from 'src/item/dto/paginated-item.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()

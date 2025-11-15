@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CategoryInputDto } from 'src/models/category/category-input.dto';
-import { CategoryUpdateDto } from 'src/models/category/category-update.dto';
-import { CategoryDto } from 'src/models/category/category.dto';
-import { PaginatedCategoryDto } from 'src/models/category/paginated-category.dto';
-import { PaginationMetaDto } from 'src/models/common/pagination-meta.dto';
-import { PaginationDto } from 'src/models/common/pagination.dto';
+import { PaginationMetaDto } from 'src/pagination/pagination-meta.dto';
+import { PaginationDto } from 'src/pagination/pagination.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CategoryInputDto } from './dto/category-input.dto';
+import { CategoryUpdateDto } from './dto/category-update.dto';
+import { CategoryDto } from './dto/category.dto';
+import { PaginatedCategoryDto } from './dto/paginated-category.dto';
 
 @Injectable()
 export class CategoryService {

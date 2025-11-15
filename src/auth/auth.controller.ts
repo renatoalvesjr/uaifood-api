@@ -11,10 +11,10 @@ import {
   Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginDto } from 'src/models/user/login.dto';
+import { LoginDto } from 'src/user/dto/login.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { TokenDto } from 'src/models/user/token.dto';
-import { UserRegisterDto } from 'src/models/user/user-register.dto';
+import { TokenDto } from 'src/user/dto/token.dto';
+import { UserRegisterDto } from 'src/user/dto/user-register.dto';
 import type { Response } from 'express';
 @ApiTags('auth')
 @Controller('auth')

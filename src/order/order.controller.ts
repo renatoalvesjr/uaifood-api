@@ -7,13 +7,13 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { OrderInputDto } from 'src/models/order/order-input.dto';
-import { OrderDto } from 'src/models/order/order.dto';
 import { OrderService } from './order.service';
-import { PaginationDto } from 'src/models/common/pagination.dto';
-import { PaginatedOrderDto } from 'src/models/order/paginated-order.dto';
-import { OrderUpdateDto } from 'src/models/order/order-update.dto';
+import { PaginationDto } from 'src/pagination/pagination.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { OrderInputDto } from './dto/order-input.dto';
+import { OrderUpdateDto } from './dto/order-update.dto';
+import { OrderDto } from './dto/order.dto';
+import { PaginatedOrderDto } from './dto/paginated-order.dto';
 
 @Controller('order')
 export class OrderController {

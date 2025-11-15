@@ -1,13 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PaginationMetaDto } from '../common/pagination-meta.dto';
-import { OrderItemDto } from './order-item.dto';
+import { ItemDto } from './item.dto';
+import { PaginationMetaDto } from '../../pagination/pagination-meta.dto';
 
-export class PaginatedOrderItemDto {
+export class PaginatedItemDto {
   @ApiProperty({
     description: 'Array de itens na página atual',
-    type: [OrderItemDto],
+    type: [ItemDto],
   })
-  data: OrderItemDto[];
+  data: ItemDto[];
 
   @ApiProperty({
     description: 'Metadados da paginação',
@@ -15,7 +15,7 @@ export class PaginatedOrderItemDto {
   })
   meta: PaginationMetaDto;
 
-  constructor(data: OrderItemDto[], meta: PaginationMetaDto) {
+  constructor(data: ItemDto[], meta: PaginationMetaDto) {
     this.data = data;
     this.meta = meta;
   }

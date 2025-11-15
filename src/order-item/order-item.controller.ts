@@ -1,9 +1,9 @@
 import { Controller, Delete, Get, Patch, Post, Query } from '@nestjs/common';
 import { OrderItemService } from './order-item.service';
-import { OrderItemInputDto } from 'src/models/order-item/order-item-input.dto';
-import { PaginationDto } from 'src/models/common/pagination.dto';
+import { PaginationDto } from 'src/pagination/pagination.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { OrderItemDto } from 'src/models/order-item/order-item.dto';
+import { OrderItemInputDto } from './dto/order-item-input.dto';
+import { OrderItemDto } from './dto/order-item.dto';
 
 @Controller('order-item')
 export class OrderItemController {

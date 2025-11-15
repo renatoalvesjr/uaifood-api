@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { CategoryDto } from '../category/category.dto';
+import { CategoryDto } from 'src/category/dto/category.dto';
 
 export class ItemDto {
   @ApiProperty({

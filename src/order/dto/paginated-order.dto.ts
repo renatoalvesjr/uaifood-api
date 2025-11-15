@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PaginationMetaDto } from '../common/pagination-meta.dto';
 import { OrderDto } from './order.dto';
+import { PaginationMetaDto } from 'src/pagination/pagination-meta.dto';
 
 export class PaginatedOrderDto {
   @ApiProperty({

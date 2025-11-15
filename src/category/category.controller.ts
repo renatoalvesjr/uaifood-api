@@ -8,12 +8,12 @@ import {
   Query,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
-import { CategoryUpdateDto } from 'src/models/category/category-update.dto';
-import { CategoryInputDto } from 'src/models/category/category-input.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { CategoryDto } from 'src/models/category/category.dto';
-import { PaginationDto } from 'src/models/common/pagination.dto';
-import { PaginatedCategoryDto } from 'src/models/category/paginated-category.dto';
+import { PaginationDto } from 'src/pagination/pagination.dto';
+import { CategoryDto } from './dto/category.dto';
+import { CategoryInputDto } from './dto/category-input.dto';
+import { CategoryUpdateDto } from './dto/category-update.dto';
+import { PaginatedCategoryDto } from './dto/paginated-category.dto';
 
 @Controller('category')
 export class CategoryController {
