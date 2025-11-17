@@ -46,7 +46,7 @@ export class UserDto {
     enum: UserType,
     example: UserType.CLIENT,
   })
-  userType: UserType;
+  type: UserType;
 
   @ApiProperty({
     description: 'Data de criação do usuário',

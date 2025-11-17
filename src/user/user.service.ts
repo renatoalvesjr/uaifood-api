@@ -28,7 +28,7 @@ export class UserService {
         email: register.email,
         password: register.password,
         phone: register.phone,
-        type: register.userType,
+        type: register.type,
       },
     });
   }

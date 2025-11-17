@@ -55,10 +55,5 @@ export class UserRegisterDto {
     example: UserType.CLIENT,
     default: UserType.CLIENT,
   })
-  @ApiProperty({
-    description: 'Tipo de usuario',
-    enum: UserType,
-    example: UserType.CLIENT,
-  })
-  userType: UserType;
+  type: UserType;
 }

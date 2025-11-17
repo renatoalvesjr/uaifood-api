@@ -5,17 +5,25 @@ https://docs.nestjs.com/controllers#controllers
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
+  Request,
   Res,
+  UseGuards,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { LoginDto } from 'src/user/dto/login.dto';
+import { AuthService, SanitizedUser } from './auth.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TokenDto } from 'src/user/dto/token.dto';
 import { UserRegisterDto } from 'src/user/dto/user-register.dto';
+import { LocalAuthGuard } from './guards/local-auth.guard';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import type { Response } from 'express';
+import { LoginDto } from 'src/user/dto/login.dto';
+import { Roles } from './guards/roles.decorator';
+import { UserType } from 'generated/prisma';
+import { RolesGuard } from './guards/roles.guard';
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -37,12 +45,14 @@ export class AuthController {
     type: '',
   })
   @HttpCode(HttpStatus.OK)
+  @UseGuards(LocalAuthGuard)
   @Post('login')
   async signIn(
-    @Body() signInDto: LoginDto,
+    @Body() _: LoginDto,
     @Res({ passthrough: true }) response: Response,
+    @Request() req: { user: SanitizedUser },
   ) {
-    const token = await this.authService.signIn(signInDto);
+    const token = await this.authService.login(req.user);
     response.cookie('access_token', token.access_token, {
       httpOnly: true,
       secure: true,
@@ -66,5 +76,12 @@ export class AuthController {
   @Post('register')
   register(@Body() registerDto: UserRegisterDto) {
     return this.authService.register(registerDto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('profile')
+  @Roles(UserType.CLIENT)
+  getProfile(@Request() req: { user: SanitizedUser }) {
+    return req.user;
   }
 }

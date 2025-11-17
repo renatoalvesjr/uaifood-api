@@ -1,12 +1,21 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User } from 'generated/prisma';
-import { LoginDto } from 'src/user/dto/login.dto';
+import { $Enums, User } from 'generated/prisma';
 import { UserRegisterDto } from 'src/user/dto/user-register.dto';
 import { TokenDto } from 'src/user/dto/token.dto';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
 
+export interface SanitizedUser {
+  name: string;
+  id: number;
+  createdAt: Date;
+  updatedAt: Date;
+  type: $Enums.UserType;
+  email: string;
+  phone: string | null;
+  addressId: number | null;
+}
 @Injectable()
 export class AuthService {
   logger: Logger = new Logger(AuthService.name);
@@ -16,39 +25,26 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async signIn(
-    login: LoginDto,
-    res?: import('express').Response,
-  ): Promise<TokenDto> {
-    const user: User | null = await this.userService.getUser(login.email);
-    this.logger.log(`Atempting to login with email ${login.email}`);
-    if (!user) {
-      this.logger.error(`Couldn't find user with email ${login.email}`);
-      throw new Error('Usuário não encontrado');
-    }
+  async validateUser(
+    email: string,
+    password: string,
+  ): Promise<SanitizedUser | null> {
+    const user: User | null = await this.userService.getUser(email);
     if (
-      !(await this.userService.checkPassword(login.password, user.password))
+      user &&
+      (await this.userService.checkPassword(password, user.password))
     ) {
-      this.logger.error(`Invalid password for user with email ${login.email}`);
-      throw new UnauthorizedException();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...result } = user;
+      return result;
     }
-    const payload = { sub: user.id, email: user.email };
-    this.logger.log(`Login successful for user with email ${login.email}`);
-    const token = await this.jwtService.signAsync(payload);
+    return null;
+  }
 
-    // If an Express response object was provided, set the cookie as HttpOnly
-    if (res) {
-      res.cookie('access_token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        path: '/',
-        maxAge: 24 * 60 * 60 * 1000, // 1 day
-      });
-    }
-
+  async login(login: SanitizedUser) {
+    const payload = { sub: login.id, email: login.email, roles: login.type };
     return {
-      access_token: token,
+      access_token: await this.jwtService.signAsync(payload),
     };
   }
 
@@ -68,7 +64,11 @@ export class AuthService {
       this.logger.error(`Couldn't create user with email ${register.email}`);
       throw new Error('Erro ao criar usuário');
     }
-    const payload = { sub: createdUser.id, email: createdUser.email };
+    const payload = {
+      sub: createdUser.id,
+      email: createdUser.email,
+      roles: createdUser.type,
+    };
     this.logger.log(`User with email ${register.email} registered`);
     return {
       access_token: await this.jwtService.signAsync(payload),
