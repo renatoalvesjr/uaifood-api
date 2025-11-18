@@ -56,6 +56,15 @@ export class OrderService {
     });
   }
 
+  async getOpenOrderByUserId(userId: number): Promise<OrderDto | null> {
+    return await this.prisma.order.findFirst({
+      where: {
+        userClientId: Number(userId),
+        status: 'OPEN',
+      },
+    });
+  }
+
   async updateOrder(orderUpdate: OrderUpdateDto): Promise<OrderDto> {
     this.logger.log(`Updating order with id ${orderUpdate.id}`);
     const response = await this.prisma.order.update({
@@ -65,6 +74,40 @@ export class OrderService {
       data: {
         paymentMethod: orderUpdate.paymentMethod,
         status: orderUpdate.status,
+      },
+    });
+    if (!response) {
+      throw new Error(`Order with id ${orderUpdate.id} not found`);
+    }
+    return response;
+  }
+
+  async updateOrderStatus(orderUpdate: OrderUpdateDto): Promise<OrderDto> {
+    this.logger.log(`Updating order with id ${orderUpdate.id}`);
+    const response = await this.prisma.order.update({
+      where: {
+        id: Number(orderUpdate.id),
+      },
+      data: {
+        status: orderUpdate.status,
+      },
+    });
+    if (!response) {
+      throw new Error(`Order with id ${orderUpdate.id} not found`);
+    }
+    return response;
+  }
+
+  async updateOrderPaymentMethod(
+    orderUpdate: OrderUpdateDto,
+  ): Promise<OrderDto> {
+    this.logger.log(`Updating order with id ${orderUpdate.id}`);
+    const response = await this.prisma.order.update({
+      where: {
+        id: Number(orderUpdate.id),
+      },
+      data: {
+        paymentMethod: orderUpdate.paymentMethod,
       },
     });
     if (!response) {

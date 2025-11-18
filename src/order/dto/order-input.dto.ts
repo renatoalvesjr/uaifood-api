@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
-import { PaymentMethod } from 'generated/prisma';
+import { IsEnum, IsNotEmpty, IsNumber } from 'class-validator';
+import { $Enums, PaymentMethod } from 'generated/prisma';
 
 export class OrderInputDto {
   @ApiProperty({
@@ -30,9 +30,9 @@ export class OrderInputDto {
 
   @ApiProperty({
     description: 'Status do pedido',
-    example: 'PENDENTE',
+    example: 'OPEN',
   })
-  @IsString({ message: 'Status deve ser uma string' })
+  @IsEnum($Enums.OrderStatus, { message: 'Status inválido' })
   @IsNotEmpty({ message: 'Status não pode ser vazio' })
-  status: string;
+  status: $Enums.OrderStatus;
 }

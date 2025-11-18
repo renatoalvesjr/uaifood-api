@@ -1,4 +1,12 @@
-import { Controller, Delete, Get, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { OrderItemService } from './order-item.service';
 import { PaginationDto } from 'src/pagination/pagination.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
@@ -20,7 +28,7 @@ export class OrderItemController {
     type: OrderItemDto,
   })
   @Post()
-  createOrderItem(orderItem: OrderItemInputDto) {
+  createOrderItem(@Body() orderItem: OrderItemInputDto) {
     return this.orderItemService.createOrderItem(orderItem);
   }
 
@@ -35,7 +43,7 @@ export class OrderItemController {
     type: OrderItemDto,
   })
   @Get()
-  getOrderItems(pagination: PaginationDto) {
+  getOrderItems(@Query() pagination: PaginationDto) {
     return this.orderItemService.getOrderItems(pagination);
   }
 

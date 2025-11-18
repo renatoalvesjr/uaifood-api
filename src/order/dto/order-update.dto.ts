@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PaymentMethod } from 'generated/prisma';
+import { OrderStatus, PaymentMethod } from 'generated/prisma';
 
 export class OrderUpdateDto {
   @ApiProperty({
@@ -17,5 +17,5 @@ export class OrderUpdateDto {
     description: 'Status do pedido',
     example: 'PENDENTE',
   })
-  status?: string;
+  status?: OrderStatus;
 }

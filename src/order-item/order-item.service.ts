@@ -39,6 +39,19 @@ export class OrderItemService {
     });
   }
 
+  async getItemsByOrderId(orderId: number): Promise<OrderItemDto[]> {
+    this.logger.log(`Getting items for orderId ${orderId}`);
+    return await this.prisma.orderItem.findMany({
+      where: {
+        orderId: Number(orderId),
+      },
+      include: {
+        item: true,
+        order: true,
+      },
+    });
+  }
+
   async getOrderItems(
     pagination: PaginationDto,
   ): Promise<PaginatedOrderItemDto> {

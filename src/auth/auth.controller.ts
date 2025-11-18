@@ -82,6 +82,7 @@ export class AuthController {
   @Get('profile')
   @Roles(UserType.CLIENT)
   getProfile(@Request() req: { user: SanitizedUser }) {
+    console.log('Logged user:', req.user);
     return req.user;
   }
 }

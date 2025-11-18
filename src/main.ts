@@ -17,6 +17,7 @@ async function bootstrap() {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Uaifood API Doc')
     .setDescription('Documentação da API Uaifood')
+    .addBearerAuth()
     .setVersion('1.0')
     .build();
   const documentFactory = () =>
