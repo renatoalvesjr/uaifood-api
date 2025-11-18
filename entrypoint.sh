@@ -4,7 +4,8 @@ export CHOKIDAR_USEPOLLING=true
 echo "CHOKIDAR_USEPOLLING ativado para hot-reload."
 
 echo "Aplicando migrações do Prisma (migrate deploy)..."
-npx prisma migrate migrate dev --name init
+npx prisma migrate dev --name init
+
 echo "Gerando Prisma Client..."
 npx prisma generate
 

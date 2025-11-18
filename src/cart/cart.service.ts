@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { OrderService } from 'src/order/order.service';
 import { OrderItemService } from 'src/order-item/order-item.service';
-import { OrderInputDto } from 'src/order/dto/order-input.dto';
-import { OrderItemInputDto } from 'src/order-item/dto/order-item-input.dto';
-import { PaymentMethod } from 'generated/prisma';
+import { $Enums, PaymentMethod } from 'generated/prisma';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -14,19 +12,54 @@ export class CartService {
     private readonly prisma: PrismaService,
   ) {}
 
-  async createNewCart(newOrder: OrderInputDto) {
-    return await this.orderService.createOrder(newOrder);
+  async createNewCart(userId: number, firstItemId: number) {
+    const order = await this.prisma.order.create({
+      data: {
+        userClientId: Number(userId),
+        userCreatedById: Number(userId),
+        paymentMethod: $Enums.PaymentMethod.CASH,
+        status: $Enums.OrderStatus.OPEN,
+      },
+    });
+    const orderItem = await this.prisma.orderItem.create({
+      data: {
+        orderId: order.id,
+        quantity: 1,
+        itemId: firstItemId,
+      },
+    });
+
+    return orderItem;
   }
 
-  async addItemToCart(orderItem: OrderItemInputDto) {
-    return await this.orderItemService.createOrderItem(orderItem);
+  async changeItemQuantity(userId: number, itemId: number, quantity: number) {
+    const orderItem = await this.getOpenCartByUserId(userId);
+    if (orderItem) {
+      const updateOrderItem = await this.prisma.orderItem.update({
+        where: {
+          id: orderItem.id,
+          itemId: itemId,
+        },
+        data: {
+          quantity: quantity,
+        },
+      });
+      return updateOrderItem;
+    }
+    return null;
   }
 
   async getOpenCartByUserId(userId: number) {
-    return await this.prisma.order.findFirst({
+    return await this.prisma.orderItem.findFirst({
       where: {
-        userClientId: Number(userId),
-        status: 'OPEN',
+        order: {
+          userClientId: userId,
+          status: $Enums.OrderStatus.OPEN,
+        },
+      },
+      include: {
+        item: true,
+        order: true,
       },
     });
   }

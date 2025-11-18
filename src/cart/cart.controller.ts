@@ -1,6 +1,17 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { CartService } from './cart.service';
 import { ApiOperation } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('cart')
 export class CartController {
@@ -11,9 +22,10 @@ export class CartController {
     description: 'Get open cart by user id',
     tags: ['Cart'],
   })
-  @Get(':userId')
-  getOpenCartByUserId(@Param('userId') userId: number) {
-    return this.cartService.getOpenCartByUserId(userId);
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  getOpenCartByUserId(@Request() req: any) {
+    return this.cartService.getOpenCartByUserId(req.user.id);
   }
 
   @ApiOperation({
@@ -21,9 +33,10 @@ export class CartController {
     description: 'Create new cart',
     tags: ['Cart'],
   })
+  @UseGuards(JwtAuthGuard)
   @Post('create')
-  createNewCart(@Body() newOrder: any) {
-    return this.cartService.createNewCart(newOrder);
+  createNewCart(@Request() req: any, @Body() itemId: number) {
+    return this.cartService.createNewCart(req.user.id, itemId);
   }
 
   @ApiOperation({
@@ -34,5 +47,18 @@ export class CartController {
   @Get(':orderId/items')
   getCartItems(@Param('orderId') orderId: number) {
     return this.cartService.getCartItems(orderId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('change-quantity')
+  addItemToCart(
+    @Request() req: any,
+    @Body() changeQuantity: { itemId: number; quantity: number },
+  ) {
+    return this.cartService.changeItemQuantity(
+      req.user.id,
+      changeQuantity.itemId,
+      changeQuantity.quantity,
+    );
   }
 }
