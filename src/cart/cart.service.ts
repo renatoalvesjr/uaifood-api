@@ -28,8 +28,27 @@ export class CartService {
         itemId: firstItemId,
       },
     });
-
     return orderItem;
+  }
+
+  async addCartItem(userId: number, itemId: number) {
+    const orderItem = await this.getOpenCartByUserId(userId);
+    if (orderItem) {
+      if (orderItem.itemId === itemId) {
+        await this.changeItemQuantity(userId, itemId, orderItem.quantity + 1);
+        return orderItem;
+      }
+      const updateOrderItem = await this.prisma.orderItem.update({
+        where: {
+          id: orderItem.id,
+        },
+        data: {
+          itemId: itemId,
+        },
+      });
+      return updateOrderItem;
+    }
+    return null;
   }
 
   async changeItemQuantity(userId: number, itemId: number, quantity: number) {

@@ -61,4 +61,10 @@ export class CartController {
       changeQuantity.quantity,
     );
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('add-item')
+  addCartItem(@Request() req: any, @Body() itemId: number) {
+    return this.cartService.addCartItem(req.user.id, itemId);
+  }
 }
