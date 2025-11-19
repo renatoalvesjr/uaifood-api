@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { OrderService } from 'src/order/order.service';
 import { OrderItemService } from 'src/order-item/order-item.service';
-import { $Enums, Item, OrderItem, PaymentMethod } from 'generated/prisma';
+import { $Enums, Item, PaymentMethod } from 'generated/prisma';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -12,11 +12,47 @@ export class CartService {
     private readonly prisma: PrismaService,
   ) {}
 
+  async getCart(userId: number) {
+    // Get open carts
+    const carts = await this.getOpenCartByUserId(userId);
+
+    // If no open carts, return empty array
+    if (!carts || carts.length === 0) {
+      return [];
+    }
+
+    // Calculate the cart total(price*quantity)
+    const cartTotal = await Promise.all(
+      carts.map(async (cart) => {
+        const item = await this.prisma.item.findUnique({
+          where: { id: cart.itemId },
+        });
+        if (!item) return 0;
+        if (item.unitPrice === null) return 0;
+        return item.unitPrice * cart.quantity;
+      }),
+    );
+    const total = cartTotal.reduce((a, b) => a + b, 0);
+
+    return {
+      carts,
+      total,
+    };
+  }
+
   async createNewCart(userId: number, firstItemId: number) {
+    // Check if item exists
+    if (!(await this.itemExists(firstItemId))) {
+      throw new Error('Item does not exist');
+    }
+
+    // Check if user has an open cart
     const orderItems = await this.getOpenCartByUserId(userId);
-    if (orderItems) {
+    if (orderItems.length > 0) {
       throw new Error('Cart already exists');
     }
+
+    // Create new order
     const order = await this.prisma.order.create({
       data: {
         userClientId: Number(userId),
@@ -25,6 +61,8 @@ export class CartService {
         status: $Enums.OrderStatus.OPEN,
       },
     });
+
+    // Add first item to order
     const orderItem = await this.prisma.orderItem.create({
       data: {
         orderId: order.id,
@@ -36,22 +74,34 @@ export class CartService {
         order: true,
       },
     });
+
     return orderItem;
   }
 
   async addCartItem(userId: number, itemId: number) {
-    console.log(`Adding item to cart ${itemId} for user ${userId}`);
+    // Check if item exists
+    const itemExists = await this.prisma.item.findUnique({
+      where: { id: itemId },
+    });
+    if (!itemExists) {
+      throw new Error('Item does not exist');
+    }
+
+    // Get open cart items
     const orderItems = await this.getOpenCartByUserId(userId);
+
+    // If no open cart, create one
     if (!orderItems || orderItems.length === 0) {
       console.log('Creating new cart');
       return this.createNewCart(userId, itemId);
     }
 
+    // Check if item already exists in cart
     const existingItem = orderItems.find((orderItem) => {
       return orderItem.itemId === itemId;
     });
-    console.log(existingItem);
 
+    // If item exists, increase quantity
     if (existingItem) {
       return await this.changeItemQuantity(
         userId,
@@ -59,6 +109,7 @@ export class CartService {
         existingItem.quantity + 1,
       );
     } else {
+      // If item does not exist, add to cart
       const orderItem = await this.prisma.orderItem.create({
         data: {
           orderId: orderItems[0].orderId,
@@ -70,62 +121,85 @@ export class CartService {
           order: true,
         },
       });
+
       return orderItem;
     }
   }
 
+  async itemExists(itemId: number) {
+    // Check if item exists
+    const item = await this.prisma.item.findFirst({
+      where: {
+        id: itemId,
+      },
+    });
+    return item !== null;
+  }
+
   async getCartItems(userId: number): Promise<Item[]> {
+    // Get open cart items
     const orderItems = await this.getOpenCartByUserId(userId);
 
+    // If no open cart, return empty array
     if (!orderItems || orderItems.length === 0) {
       return [];
     }
 
-    const itemPromises = orderItems.map((orderItem) =>
-      this.prisma.item.findUnique({
-        where: {
-          id: orderItem.itemId,
+    // Get item ids from order items
+    const itemIds = orderItems.map((orderItem) => orderItem.itemId);
+
+    // Return list of items from item ids
+    return await this.prisma.item.findMany({
+      where: {
+        id: {
+          in: itemIds,
         },
-      }),
-    );
-
-    const items = await Promise.all(itemPromises);
-
-    // Filter out any null results (if an item wasn't found for some reason)
-    const validItems = items.filter((item): item is Item => item !== null);
-
-    console.log(validItems);
-    return validItems;
+      },
+    });
   }
 
   async changeItemQuantity(userId: number, itemId: number, quantity: number) {
+    // Check if item exists
+    if (!(await this.itemExists(itemId))) {
+      throw new Error('Item does not exist');
+    }
+    // Get open cart items
     const orderItems = await this.getOpenCartByUserId(userId);
 
+    // If no open cart, create one
+    if (!orderItems || orderItems.length === 0) {
+      return this.createNewCart(userId, itemId);
+    }
+
+    // Update quantity or remove item
     if (orderItems) {
-      orderItems.map(async (orderItem) => {
-        if (orderItem.itemId === itemId) {
-          if (quantity <= 0) {
-            await this.prisma.orderItem.delete({
-              where: {
-                id: orderItem.id,
-              },
-            });
-          } else {
-            await this.prisma.orderItem.update({
-              where: {
-                id: orderItem.id,
-              },
-              data: {
-                quantity: quantity,
-              },
-            });
+      await Promise.all(
+        orderItems.map(async (orderItem) => {
+          if (orderItem.itemId === itemId) {
+            if (quantity <= 0) {
+              await this.prisma.orderItem.delete({
+                where: {
+                  id: orderItem.id,
+                },
+              });
+            } else {
+              await this.prisma.orderItem.update({
+                where: {
+                  id: orderItem.id,
+                },
+                data: {
+                  quantity: quantity,
+                },
+              });
+            }
           }
-        }
-      });
+        }),
+      );
     }
   }
 
   async getOpenCartByUserId(userId: number) {
+    // Get open cart items
     return await this.prisma.orderItem.findMany({
       where: {
         order: {
@@ -140,28 +214,75 @@ export class CartService {
     });
   }
 
-  async removeItemFromCart(orderId: number, itemId: number) {
-    const orderItem = await this.orderItemService.getOrderItem(orderId, itemId);
-    if (orderItem) {
-      return await this.orderItemService.removeOrderItem(
-        orderItem.orderId,
-        itemId,
+  private async updateOrderStatus(
+    orderId: number,
+    fromStatus: $Enums.OrderStatus,
+    toStatus: $Enums.OrderStatus,
+  ) {
+    const result = await this.prisma.order.updateMany({
+      where: {
+        id: orderId,
+        status: fromStatus,
+      },
+      data: {
+        status: toStatus,
+      },
+    });
+
+    if (result.count === 0) {
+      throw new NotFoundException(
+        `Order with ID #${orderId} and status ${fromStatus} not found`,
       );
     }
-    return null;
+    return result;
   }
 
-  async cancelCart(orderItemId: number) {
-    return await this.orderService.updateOrderStatus({
-      id: orderItemId,
-      status: 'CANCELLED',
+  async toPaymentCart(orderId: number) {
+    return this.updateOrderStatus(
+      orderId,
+      $Enums.OrderStatus.OPEN,
+      $Enums.OrderStatus.PROCESSING,
+    );
+  }
+
+  async processingToCompletedCart(orderId: number) {
+    return this.updateOrderStatus(
+      orderId,
+      $Enums.OrderStatus.PROCESSING,
+      $Enums.OrderStatus.COMPLETED,
+    );
+  }
+
+  async cancelCart(orderId: number) {
+    const result = await this.prisma.order.updateMany({
+      where: {
+        id: orderId,
+        status: {
+          in: [$Enums.OrderStatus.OPEN, $Enums.OrderStatus.PROCESSING],
+        },
+      },
+      data: {
+        status: $Enums.OrderStatus.CANCELLED,
+      },
     });
+
+    if (result.count === 0) {
+      throw new NotFoundException(
+        `Order with ID #${orderId} with status OPEN or PROCESSING not found for cancellation.`,
+      );
+    }
+
+    return result;
   }
 
   async changePaymentMethod(orderId: number, paymentMethod: PaymentMethod) {
-    return await this.orderService.updateOrderPaymentMethod({
-      id: orderId,
-      paymentMethod: paymentMethod,
+    return await this.prisma.order.update({
+      where: {
+        id: orderId,
+      },
+      data: {
+        paymentMethod: paymentMethod,
+      },
     });
   }
 

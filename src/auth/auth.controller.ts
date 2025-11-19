@@ -47,12 +47,13 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async signIn(
+  async login(
     @Body() _: LoginDto,
     @Res({ passthrough: true }) response: Response,
     @Request() req: { user: SanitizedUser },
   ) {
     const token = await this.authService.login(req.user);
+
     response.cookie('access_token', token.access_token, {
       httpOnly: true,
       secure: true,

@@ -25,7 +25,7 @@ export class CartController {
   @UseGuards(JwtAuthGuard)
   @Get()
   getOpenCartByUserId(@Request() req: any) {
-    return this.cartService.getOpenCartByUserId(req.user.id);
+    return this.cartService.getCart(req.user.id);
   }
 
   @ApiOperation({
@@ -37,11 +37,17 @@ export class CartController {
   @Post('create')
   async createNewCart(@Request() req: any, @Body() itemId: { itemId: number }) {
     try {
-      const response = await this.cartService.createNewCart(req.user.id, itemId.itemId);
+      const response = await this.cartService.createNewCart(
+        req.user.id,
+        itemId.itemId,
+      );
       return response;
-    } catch (error: Error | any) {
-      console.error(error);
-      return error.message;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error(error.message);
+        return error.message;
+      }
+      return 'An unexpected error occurred';
     }
   }
 
@@ -72,6 +78,14 @@ export class CartController {
   @UseGuards(JwtAuthGuard)
   @Post('add-item/:itemId')
   addCartItem(@Request() req: any, @Param('itemId') itemId: number) {
-    return this.cartService.addCartItem(req.user.id, itemId);
+    try {
+      return this.cartService.addCartItem(req.user.id, itemId);
+    } catch (error: any) {
+      if (error instanceof Error) {
+        console.error(error.message);
+        return error.message;
+      }
+      return 'An unexpected error occurred';
+    }
   }
 }
