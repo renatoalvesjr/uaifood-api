@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { OrderService } from 'src/order/order.service';
 import { OrderItemService } from 'src/order-item/order-item.service';
-import { $Enums, PaymentMethod } from 'generated/prisma';
+import { $Enums, Item, OrderItem, PaymentMethod } from 'generated/prisma';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -13,6 +13,10 @@ export class CartService {
   ) {}
 
   async createNewCart(userId: number, firstItemId: number) {
+    const orderItems = await this.getOpenCartByUserId(userId);
+    if (orderItems) {
+      throw new Error('Cart already exists');
+    }
     const order = await this.prisma.order.create({
       data: {
         userClientId: Number(userId),
@@ -27,49 +31,102 @@ export class CartService {
         quantity: 1,
         itemId: firstItemId,
       },
+      include: {
+        item: true,
+        order: true,
+      },
     });
     return orderItem;
   }
 
   async addCartItem(userId: number, itemId: number) {
-    const orderItem = await this.getOpenCartByUserId(userId);
-    if (orderItem) {
-      if (orderItem.itemId === itemId) {
-        await this.changeItemQuantity(userId, itemId, orderItem.quantity + 1);
-        return orderItem;
-      }
-      const updateOrderItem = await this.prisma.orderItem.update({
-        where: {
-          id: orderItem.id,
-        },
+    console.log(`Adding item to cart ${itemId} for user ${userId}`);
+    const orderItems = await this.getOpenCartByUserId(userId);
+    if (!orderItems || orderItems.length === 0) {
+      console.log('Creating new cart');
+      return this.createNewCart(userId, itemId);
+    }
+
+    const existingItem = orderItems.find((orderItem) => {
+      return orderItem.itemId === itemId;
+    });
+    console.log(existingItem);
+
+    if (existingItem) {
+      return await this.changeItemQuantity(
+        userId,
+        itemId,
+        existingItem.quantity + 1,
+      );
+    } else {
+      const orderItem = await this.prisma.orderItem.create({
         data: {
+          orderId: orderItems[0].orderId,
+          quantity: 1,
           itemId: itemId,
         },
+        include: {
+          item: true,
+          order: true,
+        },
       });
-      return updateOrderItem;
+      return orderItem;
     }
-    return null;
+  }
+
+  async getCartItems(userId: number): Promise<Item[]> {
+    const orderItems = await this.getOpenCartByUserId(userId);
+
+    if (!orderItems || orderItems.length === 0) {
+      return [];
+    }
+
+    const itemPromises = orderItems.map((orderItem) =>
+      this.prisma.item.findUnique({
+        where: {
+          id: orderItem.itemId,
+        },
+      }),
+    );
+
+    const items = await Promise.all(itemPromises);
+
+    // Filter out any null results (if an item wasn't found for some reason)
+    const validItems = items.filter((item): item is Item => item !== null);
+
+    console.log(validItems);
+    return validItems;
   }
 
   async changeItemQuantity(userId: number, itemId: number, quantity: number) {
-    const orderItem = await this.getOpenCartByUserId(userId);
-    if (orderItem) {
-      const updateOrderItem = await this.prisma.orderItem.update({
-        where: {
-          id: orderItem.id,
-          itemId: itemId,
-        },
-        data: {
-          quantity: quantity,
-        },
+    const orderItems = await this.getOpenCartByUserId(userId);
+
+    if (orderItems) {
+      orderItems.map(async (orderItem) => {
+        if (orderItem.itemId === itemId) {
+          if (quantity <= 0) {
+            await this.prisma.orderItem.delete({
+              where: {
+                id: orderItem.id,
+              },
+            });
+          } else {
+            await this.prisma.orderItem.update({
+              where: {
+                id: orderItem.id,
+              },
+              data: {
+                quantity: quantity,
+              },
+            });
+          }
+        }
       });
-      return updateOrderItem;
     }
-    return null;
   }
 
   async getOpenCartByUserId(userId: number) {
-    return await this.prisma.orderItem.findFirst({
+    return await this.prisma.orderItem.findMany({
       where: {
         order: {
           userClientId: userId,
@@ -99,10 +156,6 @@ export class CartService {
       id: orderItemId,
       status: 'CANCELLED',
     });
-  }
-
-  async getCartItems(orderId: number) {
-    return await this.orderItemService.getItemsByOrderId(orderId);
   }
 
   async changePaymentMethod(orderId: number, paymentMethod: PaymentMethod) {

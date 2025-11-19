@@ -6,6 +6,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { PaginationDto } from 'src/pagination/pagination.dto';
@@ -14,6 +15,7 @@ import { OrderInputDto } from './dto/order-input.dto';
 import { OrderUpdateDto } from './dto/order-update.dto';
 import { OrderDto } from './dto/order.dto';
 import { PaginatedOrderDto } from './dto/paginated-order.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('order')
 export class OrderController {
@@ -29,6 +31,7 @@ export class OrderController {
     description: 'Pedido criado com sucesso.',
     type: OrderDto,
   })
+  @UseGuards(JwtAuthGuard)
   @Post()
   createOrder(@Body() order: OrderInputDto): Promise<OrderDto> {
     return this.orderService.createOrder(order);

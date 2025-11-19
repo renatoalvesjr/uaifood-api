@@ -35,8 +35,14 @@ export class CartController {
   })
   @UseGuards(JwtAuthGuard)
   @Post('create')
-  createNewCart(@Request() req: any, @Body() itemId: number) {
-    return this.cartService.createNewCart(req.user.id, itemId);
+  async createNewCart(@Request() req: any, @Body() itemId: { itemId: number }) {
+    try {
+      const response = await this.cartService.createNewCart(req.user.id, itemId.itemId);
+      return response;
+    } catch (error: Error | any) {
+      console.error(error);
+      return error.message;
+    }
   }
 
   @ApiOperation({
@@ -44,9 +50,10 @@ export class CartController {
     description: 'Get cart items',
     tags: ['Cart'],
   })
-  @Get(':orderId/items')
-  getCartItems(@Param('orderId') orderId: number) {
-    return this.cartService.getCartItems(orderId);
+  @UseGuards(JwtAuthGuard)
+  @Get('/items')
+  async getCartItems(@Request() req: any) {
+    return await this.cartService.getCartItems(req.user.id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -63,8 +70,8 @@ export class CartController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('add-item')
-  addCartItem(@Request() req: any, @Body() itemId: number) {
+  @Post('add-item/:itemId')
+  addCartItem(@Request() req: any, @Param('itemId') itemId: number) {
     return this.cartService.addCartItem(req.user.id, itemId);
   }
 }
