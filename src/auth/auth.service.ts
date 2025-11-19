@@ -6,7 +6,7 @@ import { TokenDto } from 'src/user/dto/token.dto';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
 
-export interface SanitizedUser {
+export class SanitizedUser {
   name: string;
   id: number;
   createdAt: Date;

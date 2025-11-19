@@ -78,6 +78,15 @@ export class AuthController {
     return this.authService.register(registerDto);
   }
 
+  @ApiOperation({
+    summary: 'Profile',
+    description: 'Profile de usuário',
+    tags: ['Auth'],
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: SanitizedUser,
+  })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('profile')
   @Roles(UserType.CLIENT)

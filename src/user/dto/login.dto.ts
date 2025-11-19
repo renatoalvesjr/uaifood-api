@@ -16,9 +16,21 @@ export class LoginDto {
   email: string;
   @ApiProperty({
     description: 'Senha do usuário',
-    example: '123456',
+    example: 'Senha123!',
   })
   @IsNotEmpty({ message: 'Senha não pode ser vazia' })
   @IsString({ message: 'Senha deve ser uma string' })
+  @IsStrongPassword(
+    {
+      minLength: 8,
+      minLowercase: 1,
+      minUppercase: 1,
+      minNumbers: 1,
+      minSymbols: 1,
+    },
+    {
+      message: 'Senha inválida',
+    },
+  )
   password: string;
 }

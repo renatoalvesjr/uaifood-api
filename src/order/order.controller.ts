@@ -22,7 +22,7 @@ export class OrderController {
   @ApiOperation({
     summary: 'Criar pedido',
     description: 'Cria um novo pedido.',
-    tags: ['Pedido'],
+    tags: ['Order'],
   })
   @ApiResponse({
     status: 201,
@@ -37,7 +37,7 @@ export class OrderController {
   @ApiOperation({
     summary: 'Buscar pedidos',
     description: 'Busca todos os pedidos paginados.',
-    tags: ['Pedido'],
+    tags: ['Order'],
   })
   @ApiResponse({
     status: 201,
@@ -52,7 +52,7 @@ export class OrderController {
   @ApiOperation({
     summary: 'Buscar pedido por id',
     description: 'Busca um pedido pelo seu Id',
-    tags: ['Pedido'],
+    tags: ['Order'],
   })
   @ApiResponse({
     status: 201,
@@ -67,7 +67,7 @@ export class OrderController {
   @ApiOperation({
     summary: 'Atualizar pedido',
     description: 'Atualiza um pedido pelo seu Id',
-    tags: ['Pedido'],
+    tags: ['Order'],
   })
   @ApiResponse({
     status: 201,
@@ -82,7 +82,7 @@ export class OrderController {
   @ApiOperation({
     summary: 'Remover pedido',
     description: 'Remove um pedido pelo seu Id',
-    tags: ['Pedido'],
+    tags: ['Order'],
   })
   @ApiResponse({
     status: 201,

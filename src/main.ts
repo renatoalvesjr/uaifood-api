@@ -17,7 +17,18 @@ async function bootstrap() {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Uaifood API Doc')
     .setDescription('Documentação da API Uaifood')
-    .addBearerAuth()
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
+    .addSecurityRequirements('JWT-auth')
     .setVersion('1.0')
     .build();
   const documentFactory = () =>
