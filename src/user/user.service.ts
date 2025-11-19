@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
-import { UserRegisterDto } from 'src/user/dto/user-register.dto';
-import { User } from 'generated/prisma';
+import { ClientRegisterDto } from 'src/user/dto/user-register.dto';
+import { $Enums, User } from 'generated/prisma';
 
 @Injectable()
 export class UserService {
@@ -17,10 +17,13 @@ export class UserService {
       where: {
         email,
       },
+      include: {
+        address: true,
+      },
     });
   }
 
-  async createUser(register: UserRegisterDto): Promise<User> {
+  async createUser(register: ClientRegisterDto): Promise<User> {
     this.logger.log(`Creating user with email ${register.email}`);
     return await this.prisma.user.create({
       data: {
@@ -28,7 +31,7 @@ export class UserService {
         email: register.email,
         password: register.password,
         phone: register.phone,
-        type: register.type,
+        type: $Enums.UserType.CLIENT,
       },
     });
   }

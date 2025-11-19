@@ -14,16 +14,16 @@ export class CartService {
 
   async getCart(userId: number) {
     // Get open carts
-    const carts = await this.getOpenCartByUserId(userId);
+    const items = await this.getOpenCartByUserId(userId);
 
-    // If no open carts, return empty array
-    if (!carts || carts.length === 0) {
-      return [];
+    // If no open items, return null
+    if (!items || items.length === 0) {
+      return null;
     }
 
-    // Calculate the cart total(price*quantity)
+    // Generate a list of prices per item i.e., price*quantity
     const cartTotal = await Promise.all(
-      carts.map(async (cart) => {
+      items.map(async (cart) => {
         const item = await this.prisma.item.findUnique({
           where: { id: cart.itemId },
         });
@@ -32,10 +32,11 @@ export class CartService {
         return item.unitPrice * cart.quantity;
       }),
     );
+    // Sum the cart total
     const total = cartTotal.reduce((a, b) => a + b, 0);
 
     return {
-      carts,
+      items,
       total,
     };
   }
@@ -126,7 +127,7 @@ export class CartService {
     }
   }
 
-  async itemExists(itemId: number) {
+  async itemExists(itemId: number): Promise<boolean> {
     // Check if item exists
     const item = await this.prisma.item.findFirst({
       where: {
@@ -136,13 +137,13 @@ export class CartService {
     return item !== null;
   }
 
-  async getCartItems(userId: number): Promise<Item[]> {
+  async getCartItems(userId: number): Promise<Item[] | null> {
     // Get open cart items
     const orderItems = await this.getOpenCartByUserId(userId);
 
-    // If no open cart, return empty array
+    // If no open cart, return null
     if (!orderItems || orderItems.length === 0) {
-      return [];
+      return null;
     }
 
     // Get item ids from order items
@@ -214,6 +215,29 @@ export class CartService {
     });
   }
 
+  async getProcessingCartByUserId(userId: number) {
+    // Get open cart items
+    return await this.prisma.orderItem.findMany({
+      where: {
+        order: {
+          userClientId: userId,
+          status: $Enums.OrderStatus.PROCESSING,
+        },
+      },
+      include: {
+        item: true,
+        order: true,
+      },
+    });
+  }
+
+  async proceedToCheckout(userId: number) {
+    const orderItems = await this.getOpenCartByUserId(userId);
+    if (!orderItems || orderItems.length === 0) {
+      throw new Error('No open cart found');
+    }
+  }
+
   private async updateOrderStatus(
     orderId: number,
     fromStatus: $Enums.OrderStatus,
@@ -275,10 +299,15 @@ export class CartService {
     return result;
   }
 
-  async changePaymentMethod(orderId: number, paymentMethod: PaymentMethod) {
+  async changePaymentMethod(
+    userId: number,
+    orderId: number,
+    paymentMethod: PaymentMethod,
+  ) {
     return await this.prisma.order.update({
       where: {
         id: orderId,
+        userClientId: userId,
       },
       data: {
         paymentMethod: paymentMethod,

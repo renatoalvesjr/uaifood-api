@@ -6,9 +6,8 @@ import {
   IsString,
   IsStrongPassword,
 } from 'class-validator';
-import { UserType } from 'generated/prisma';
 
-export class UserRegisterDto {
+export class ClientRegisterDto {
   @ApiProperty({
     description: 'Nome do usuário',
     example: 'Renato',
@@ -48,12 +47,4 @@ export class UserRegisterDto {
   @IsOptional({ message: 'Telefone pode ser vazio' })
   @IsString({ message: 'Telefone deve ser uma string' })
   phone: string;
-
-  @ApiProperty({
-    description: 'Tipo de usuário',
-    enum: UserType,
-    example: UserType.CLIENT,
-    default: UserType.CLIENT,
-  })
-  type: UserType;
 }

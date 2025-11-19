@@ -1,7 +1,3 @@
-/*
-https://docs.nestjs.com/controllers#controllers
-*/
-
 import {
   Body,
   Controller,
@@ -16,7 +12,6 @@ import {
 import { AuthService, SanitizedUser } from './auth.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TokenDto } from 'src/user/dto/token.dto';
-import { UserRegisterDto } from 'src/user/dto/user-register.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import type { Response } from 'express';
@@ -24,6 +19,7 @@ import { LoginDto } from 'src/user/dto/login.dto';
 import { Roles } from './guards/roles.decorator';
 import { UserType } from 'generated/prisma';
 import { RolesGuard } from './guards/roles.guard';
+import { ClientRegisterDto } from 'src/user/dto/user-register.dto';
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -75,8 +71,8 @@ export class AuthController {
   })
   @HttpCode(HttpStatus.OK)
   @Post('register')
-  register(@Body() registerDto: UserRegisterDto) {
-    return this.authService.register(registerDto);
+  register(@Body() registerDto: ClientRegisterDto) {
+    return this.authService.clientRegister(registerDto);
   }
 
   @ApiOperation({
@@ -90,7 +86,6 @@ export class AuthController {
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('profile')
-  @Roles(UserType.CLIENT)
   getProfile(@Request() req: { user: SanitizedUser }) {
     console.log('Logged user:', req.user);
     return req.user;

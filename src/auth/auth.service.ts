@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { $Enums, User } from 'generated/prisma';
-import { UserRegisterDto } from 'src/user/dto/user-register.dto';
+import { ClientRegisterDto } from 'src/user/dto/user-register.dto';
 import { TokenDto } from 'src/user/dto/token.dto';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
@@ -48,7 +48,7 @@ export class AuthService {
     };
   }
 
-  async register(register: UserRegisterDto): Promise<TokenDto> {
+  async clientRegister(register: ClientRegisterDto): Promise<TokenDto> {
     this.logger.log(`Registering user with email ${register.email}`);
     const user: User | null = await this.userService.getUser(register.email);
     if (user) {
@@ -67,7 +67,7 @@ export class AuthService {
     const payload = {
       sub: createdUser.id,
       email: createdUser.email,
-      roles: createdUser.type,
+      roles: $Enums.UserType.CLIENT,
     };
     this.logger.log(`User with email ${register.email} registered`);
     return {
