@@ -46,9 +46,9 @@ export class CategoryController {
   })
   @Get()
   async getCategories(
-    @Query() paginationDto: PaginationDto,
-  ): Promise<PaginatedCategoryDto> {
-    return this.categoryService.getCategories(paginationDto);
+    @Query() paginationDto: CategoryDto[],
+  ): Promise<CategoryDto[]> {
+    return this.categoryService.getCategories();
   }
 
   @ApiOperation({

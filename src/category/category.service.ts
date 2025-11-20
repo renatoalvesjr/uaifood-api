@@ -24,31 +24,9 @@ export class CategoryService {
       },
     });
   }
-  async getCategories(
-    paginationDto: PaginationDto,
-  ): Promise<PaginatedCategoryDto> {
-    const { page, limit } = paginationDto;
-    const skip = (page - 1) * limit;
-    this.logger.log(`Getting categories - Page: ${page}, Limit: ${limit}`);
-    const totalItems = await this.prisma.category.count();
-    const data = await this.prisma.category.findMany({
-      skip,
-      take: Number(limit),
-      orderBy: { id: 'asc' },
-    });
 
-    const totalPages = Math.ceil(totalItems / limit);
-    const itemCount = data.length;
-
-    const meta: PaginationMetaDto = {
-      totalItem: totalItems,
-      itemCount,
-      page,
-      limit,
-      totalPages,
-    };
-
-    return new PaginatedCategoryDto(data, meta);
+  async getCategories(): Promise<CategoryDto[]> {
+    return await this.prisma.category.findMany();
   }
 
   async getCategory(id: number): Promise<CategoryDto | null> {
