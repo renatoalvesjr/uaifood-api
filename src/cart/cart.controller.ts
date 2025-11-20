@@ -28,13 +28,20 @@ export class CartController {
     return this.cartService.getCart(req.user.id);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('finalized-orders')
+  async getFinalizedOrders(@Request() req: { user: SanitizedUser }) {
+    return await this.cartService.getAllCarts(req.user.id);
+  }
+
+
   @ApiOperation({
     summary: 'Get cart items',
     description: 'Get cart items',
     tags: ['Cart'],
   })
   @UseGuards(JwtAuthGuard)
-  @Get('/items')
+  @Get('items')
   async getCartItems(@Request() req: { user: SanitizedUser }) {
     return await this.cartService.getCartItems(req.user.id);
   }
@@ -78,26 +85,48 @@ export class CartController {
     }
   }
 
+  @ApiOperation({
+    summary: 'Proceed to checkout',
+    description: 'Proceed to checkout',
+    tags: ['Cart'],
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Proceed to checkout',
+  })
   @UseGuards(JwtAuthGuard)
   @Post('to-payment/:orderId')
-  async toPaymentCart(@Param('orderId') orderId: number) {
-    return this.cartService.toPaymentCart(orderId);
+  async toPaymentCart(
+    @Request() req: { user: SanitizedUser },
+    @Param('orderId') orderId: number,
+  ) {
+    return this.cartService.openToProcessingCart(req.user.id, orderId);
+  }
+
+  @ApiOperation({
+    summary: 'Complete order',
+    description: 'Complete order',
+    tags: ['Cart'],
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Complete order',
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('complete-order/:orderId')
+  async changePaymentMethod(
+    @Param('orderId') orderId: number,
+    @Request() req: { user: SanitizedUser },
+  ) {
+    return this.cartService.processingToCompletedCart(req.user.id, orderId);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('change-payment-method')
-  async changePaymentMethod(
-    @Body()
-    changePaymentMethod: {
-      orderId: number;
-      paymentMethod: $Enums.PaymentMethod;
-    },
+  @Post('cancel-order/:orderId')
+  async cancelOrder(
     @Request() req: { user: SanitizedUser },
+    @Param('orderId') orderId: number,
   ) {
-    return this.cartService.changePaymentMethod(
-      req.user.id,
-      changePaymentMethod.orderId,
-      changePaymentMethod.paymentMethod,
-    );
+    return this.cartService.cancelCart(req.user.id, orderId);
   }
 }

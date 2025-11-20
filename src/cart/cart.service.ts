@@ -41,6 +41,33 @@ export class CartService {
     };
   }
 
+  async getAllCarts(userId: number) {
+    const orderItems = await this.getOpenCartByUserId(userId);
+
+    if (!orderItems || orderItems.length === 0) {
+      return [];
+    }
+
+    const cartsMap = new Map();
+
+    orderItems.forEach((orderItem) => {
+      const { order } = orderItem;
+      if (!cartsMap.has(order.id)) {
+        cartsMap.set(order.id, {
+          ...order,
+          items: [],
+          total: 0,
+        });
+      }
+
+      const cart = cartsMap.get(order.id);
+      cart.items.push(orderItem);
+      cart.total += orderItem.quantity * orderItem.item.unitPrice;
+    });
+
+    return Array.from(cartsMap.values());
+  }
+
   async createNewCart(userId: number, firstItemId: number) {
     // Check if item exists
     if (!(await this.itemExists(firstItemId))) {
@@ -239,6 +266,7 @@ export class CartService {
   }
 
   private async updateOrderStatus(
+    userId: number,
     orderId: number,
     fromStatus: $Enums.OrderStatus,
     toStatus: $Enums.OrderStatus,
@@ -247,6 +275,7 @@ export class CartService {
       where: {
         id: orderId,
         status: fromStatus,
+        userClientId: userId,
       },
       data: {
         status: toStatus,
@@ -261,26 +290,29 @@ export class CartService {
     return result;
   }
 
-  async toPaymentCart(orderId: number) {
+  async openToProcessingCart(userId: number, orderId: number) {
     return this.updateOrderStatus(
+      userId,
       orderId,
       $Enums.OrderStatus.OPEN,
       $Enums.OrderStatus.PROCESSING,
     );
   }
 
-  async processingToCompletedCart(orderId: number) {
+  async processingToCompletedCart(userId: number, orderId: number) {
     return this.updateOrderStatus(
+      userId,
       orderId,
       $Enums.OrderStatus.PROCESSING,
       $Enums.OrderStatus.COMPLETED,
     );
   }
 
-  async cancelCart(orderId: number) {
+  async cancelCart(userId: number, orderId: number) {
     const result = await this.prisma.order.updateMany({
       where: {
         id: orderId,
+        userClientId: userId,
         status: {
           in: [$Enums.OrderStatus.OPEN, $Enums.OrderStatus.PROCESSING],
         },
